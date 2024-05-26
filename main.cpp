@@ -15,7 +15,7 @@ using namespace std;
 
 typedef vec2 point2;
 
-const int numPoints = 50000;
+const int numPoints = 5000;
 
 void computePoints(const int numPoints, point2* points) {
 
@@ -106,7 +106,7 @@ void initBuffers(const int numPoints) {
     GLuint buffer;
     glGenBuffers(1, &buffer);
     glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glBufferData(GL_ARRAY_BUFFER, numPoints, points, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(points), points, GL_STATIC_DRAW);
 }
 
 void display(GLFWwindow* window) {
@@ -153,7 +153,10 @@ int initDisplay() {
     return 0;
 }
 
+int sierpisky_triangles_2d();
+
 int main() {
-    initDisplay();
+    // initDisplay();
+    sierpisky_triangles_2d();
 }
 

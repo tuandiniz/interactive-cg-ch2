@@ -6,4 +6,5 @@ set(CMAKE_CXX_STANDARD 17)
 link_libraries(glfw)
 link_libraries(GL)
 
-add_executable(interactive_cg_ch2 main.cpp)
+add_executable(interactive_cg_ch2 main.cpp
+        siaerpisky_2d_triangles.cpp)
