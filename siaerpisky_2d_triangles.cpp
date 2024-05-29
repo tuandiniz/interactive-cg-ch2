@@ -16,11 +16,11 @@ using namespace std;
 
 typedef vec2 point2;
 
-const int recursionDepth = 7;
+const int recursionDepth = 5;
 int pointCount = 0;
 
-void computePointsRecursive(point2 vertices[], vector<point2>& points, const int currentIteration, const int& maxDepth) {
-    if(maxDepth == currentIteration) {
+void computePointsRecursive(point2 vertices[], vector<point2>& points, const int currentIteration) {
+    if(currentIteration == 0) {
         for(int i = 0; i < 3; i++) {
             point2 vertex = vertices[i];
             points.push_back(vertices[i]);
@@ -37,17 +37,17 @@ void computePointsRecursive(point2 vertices[], vector<point2>& points, const int
     point2 triangle2[] = {midVertex1, vertices[1], midVertex2};
     point2 triangle3[] = {midVertex3, midVertex2, vertices[2]};
 
-    computePointsRecursive(triangle1, points, currentIteration + 1, maxDepth);
-    computePointsRecursive(triangle2, points, currentIteration + 1, maxDepth);
-    computePointsRecursive(triangle3, points, currentIteration + 1, maxDepth);
+    computePointsRecursive(triangle1, points, currentIteration - 1);
+    computePointsRecursive(triangle2, points, currentIteration - 1);
+    computePointsRecursive(triangle3, points, currentIteration - 1);
 }
 
-void computeTriangles(vector<point2>& points, const int& maxDepth) {
+void computeTriangles(vector<point2>& points, const int& depth) {
 
     // A triangle in plane z = 0
     point2 vertices[3] = { point2(1.0, -1.0), point2(0.0, 1.0), point2(-1.0, -1.0)};
 
-    computePointsRecursive(vertices, points, 1, maxDepth);
+    computePointsRecursive(vertices, points, depth);
 }
 
 string readFile(const string& fileName);
@@ -76,7 +76,6 @@ void displayTriangles2D(GLFWwindow* window) {
 
     // Draw
     glfwSwapBuffers(window);
-    glFlush();
 }
 
 int initDisplayTriangles2D() {

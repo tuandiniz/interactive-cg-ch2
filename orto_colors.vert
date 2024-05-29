@@ -1,6 +1,7 @@
 in vec4 vPosition;
+in vec4 vColor;
 
 void main() {
-    gl_FrontColor = vec4((vPosition + 1)/2.0);
+    gl_FrontColor = vColor;
     gl_Position = vPosition;
 }

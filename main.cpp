@@ -116,7 +116,6 @@ void display(GLFWwindow* window) {
 
     // Draw
     glfwSwapBuffers(window);
-    glFlush();
 }
 
 int initDisplay() {
@@ -153,10 +152,13 @@ int initDisplay() {
     return 0;
 }
 
-int sierpisky_triangles_2d();
+//int sierpisky_triangles_2d();
+int sierpisky_triangles_3d();
 
 int main() {
     // initDisplay();
-    sierpisky_triangles_2d();
+    // sierpisky_triangles_2d();
+    sierpisky_triangles_3d();
 }
+
 
