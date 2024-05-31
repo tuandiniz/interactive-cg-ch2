@@ -152,13 +152,15 @@ int initDisplay() {
     return 0;
 }
 
-//int sierpisky_triangles_2d();
-int sierpisky_triangles_3d();
+// int sierpisky_triangles_2d();
+// int sierpisky_triangles_3d();
+int color_cube();
 
 int main() {
     // initDisplay();
     // sierpisky_triangles_2d();
-    sierpisky_triangles_3d();
+    // sierpisky_triangles_3d();
+    color_cube();
 }
 
 
