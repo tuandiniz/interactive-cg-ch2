@@ -4,6 +4,8 @@
 #include <iostream>
 #include <fstream>
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <vector>
 #include <string>
 
@@ -20,6 +22,7 @@ typedef vec4 point4;
 typedef vec4 color4;
 
 int vertexCount = 0;
+int rotationAxisIndex = 0;
 
 void populateBuffers(vector<point4>& pointsArray, vector<color4>& colorArray) {
     GLuint abuffer;
@@ -85,8 +88,8 @@ void generateColorCube() {
 
 string readFile(const string& fileName);
 
-void initShadersColorCube() {
-    auto vShader = readFile("../orto_colors.vert");
+GLuint initShadersColorCube() {
+    auto vShader = readFile("../color_and_cmt.vert");
     auto fShader = readFile("../flat_color.frag");
 
     struct Shader {
@@ -142,6 +145,8 @@ void initShadersColorCube() {
     glEnableVertexAttribArray(locColors);
     glVertexAttribPointer(locColors, 4, GL_FLOAT, GL_FALSE, 0
                           , BUFFER_OFFSET(vertexCount * sizeof(point4)));
+
+    return program;
 }
 
 void displayColorCube(GLFWwindow* window) {
@@ -150,6 +155,33 @@ void displayColorCube(GLFWwindow* window) {
 
     // Draw
     glfwSwapBuffers(window);
+}
+
+void idleFunc(GLFWwindow* window, double& delta, GLuint& transformLoc, mat4& transform) {
+
+    // Speed in rads/s
+    float angularVelocity = radians(120.0f);
+    float rotation = angularVelocity * delta;
+
+    vec3 rotationAxis = vec3();
+    rotationAxis[rotationAxisIndex] = 1.0;
+    transform = rotate(mat4(1.0), rotation, rotationAxis) * transform;
+
+    glUniformMatrix4fv(transformLoc, 1, GL_FALSE, value_ptr(transform));
+    displayColorCube(window);
+}
+
+void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
+{
+    if (action == GLFW_PRESS) {
+        if (button == GLFW_MOUSE_BUTTON_RIGHT) {
+            rotationAxisIndex = 0;
+        } else if (button == GLFW_MOUSE_BUTTON_LEFT) {
+            rotationAxisIndex = 1;
+        } else if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
+            rotationAxisIndex = 2;
+        }
+    }
 }
 
 int initDisplayColorCube() {
@@ -169,16 +201,33 @@ int initDisplayColorCube() {
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
     generateColorCube();
-    initShadersColorCube();
+    auto programId = initShadersColorCube();
 
     glfwSetWindowRefreshCallback(window, &displayColorCube);
+    glfwSetMouseButtonCallback(window, mouseButtonCallback);
+
     glClearColor(1.0, 1.0, 1.0, 1.0);
+    glfwSwapInterval(1);
     glEnable(GL_DEPTH_TEST);
-    glPointSize(5.0);
+
+    auto previous = glfwGetTime();
+
+    auto transform = mat4(1.0);
+    transform = rotate(mat4(1.0), radians(30.0f), vec3(1.0, 0.0, 0.0));
+    transform = scale(transform, vec3(0.5, 0.5, 0.5)); // basic transformation
+    GLuint transformLoc = glGetUniformLocation(programId, "transform");
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
+        auto now = glfwGetTime();
+        auto delta = now - previous;
+
+        if (delta > 0.00833) { // 120 FPS
+            previous = now;
+            idleFunc(window, delta, transformLoc, transform);
+        }
+
         /* Poll for and process events */
         glfwPollEvents();
     }
