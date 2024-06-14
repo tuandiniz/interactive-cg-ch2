@@ -165,9 +165,13 @@ void idleFunc(GLFWwindow* window, double& delta, GLuint& transformLoc, mat4& tra
 
     vec3 rotationAxis = vec3();
     rotationAxis[rotationAxisIndex] = 1.0;
+
+    mat4 projection(1.0);
+    projection[2][2] = -1.0;
+
     transform = rotate(mat4(1.0), rotation, rotationAxis) * transform;
 
-    glUniformMatrix4fv(transformLoc, 1, GL_FALSE, value_ptr(transform));
+    glUniformMatrix4fv(transformLoc, 1, GL_FALSE, value_ptr(projection * transform));
     displayColorCube(window);
 }
 
@@ -213,7 +217,6 @@ int initDisplayColorCube() {
     auto previous = glfwGetTime();
 
     auto transform = mat4(1.0);
-    transform = rotate(mat4(1.0), radians(30.0f), vec3(1.0, 0.0, 0.0));
     transform = scale(transform, vec3(0.5, 0.5, 0.5)); // basic transformation
     GLuint transformLoc = glGetUniformLocation(programId, "transform");
 

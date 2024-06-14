@@ -16,7 +16,7 @@ using namespace std;
 
 typedef vec3 point3;
 
-const int recursionDepth = 2;
+const int recursionDepth = 3;
 int tetraPointCount;
 point3 colorPallete[4] = {point3 {1.0, 0.0, 0.0}, point3 {0.0, 1.0, 0.0},
                     point3 {0.0, 0.0, 1.0},point3 {1.0, 1.0, 0.0}};
