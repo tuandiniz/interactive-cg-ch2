@@ -9,4 +9,8 @@ link_libraries(GL)
 add_executable(interactive_cg_ch2 main.cpp
         siaerpisky_2d_triangles.cpp
         sierpisky_3d_color_triangles.cpp
-        color_cube.cpp)
+        color_cube.cpp
+        Scene.cpp
+        Scene.h
+        Node.cpp
+        Node.h)
