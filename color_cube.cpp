@@ -157,7 +157,7 @@ void displayColorCube(GLFWwindow* window) {
     glfwSwapBuffers(window);
 }
 
-void idleFunc(GLFWwindow* window, double& delta, GLuint& transformLoc, mat4& transform) {
+void idleFunc(GLFWwindow* window, double& delta, GLuint& modelViewLoc, mat4& transform, GLuint& projectionLoc) {
 
     // Speed in rads/s
     float angularVelocity = radians(120.0f);
@@ -168,10 +168,12 @@ void idleFunc(GLFWwindow* window, double& delta, GLuint& transformLoc, mat4& tra
 
     mat4 projection(1.0);
     projection[2][2] = -1.0;
+    projection[0][0] = 0.5;
 
     transform = rotate(mat4(1.0), rotation, rotationAxis) * transform;
 
-    glUniformMatrix4fv(transformLoc, 1, GL_FALSE, value_ptr(projection * transform));
+    glUniformMatrix4fv(modelViewLoc, 1, GL_FALSE, value_ptr(transform));
+    glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, value_ptr(projection));
     displayColorCube(window);
 }
 
@@ -195,7 +197,7 @@ int initDisplayColorCube() {
         return -1;
 
     /* Create a windowed mode window and its OpenGL context */
-    GLFWwindow* window = glfwCreateWindow(1200, 1200, "Hello World", nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(1200, 600, "Hello World", nullptr, nullptr);
     if (!window)
     {
         glfwTerminate();
@@ -218,7 +220,8 @@ int initDisplayColorCube() {
 
     auto transform = mat4(1.0);
     transform = scale(transform, vec3(0.5, 0.5, 0.5)); // basic transformation
-    GLuint transformLoc = glGetUniformLocation(programId, "transform");
+    GLuint modelViewLoc = glGetUniformLocation(programId, "modelView");
+    GLuint projectionLoc = glGetUniformLocation(programId, "projection");
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
@@ -228,7 +231,7 @@ int initDisplayColorCube() {
 
         if (delta > 0.00833) { // 120 FPS
             previous = now;
-            idleFunc(window, delta, transformLoc, transform);
+            idleFunc(window, delta, modelViewLoc, transform, projectionLoc);
         }
 
         /* Poll for and process events */
