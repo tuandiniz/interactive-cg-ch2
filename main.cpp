@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #define GLFW_INCLUDE_GLCOREARB
 #define GL_GLEXT_PROTOTYPES
@@ -8,7 +9,7 @@
 #define BUFFER_OFFSET(bytes) ((GLvoid*) (bytes))
 
 #include <GLFW/glfw3.h>
-
+#include "utils.h"
 
 using namespace glm;
 using namespace std;
@@ -30,20 +31,6 @@ void computePoints(const int numPoints, point2* points) {
         auto midPoint = (vertices[rand() % 3] + points[i - 1]) / 2.0f;
         points[i] = midPoint;
     }
-}
-
-string readFile(const string& fileName) {
-    ifstream file(fileName);
-    string line;
-    string shaderSource  = "";
-    if(file.is_open()) {
-        while(getline(file, line)) {
-            shaderSource.append(line);
-            shaderSource.append("\n");
-        }
-    }
-
-    return shaderSource;
 }
 
 void initShaders() {
@@ -153,14 +140,28 @@ int initDisplay() {
 }
 
 // int sierpisky_triangles_2d();
-// int sierpisky_triangles_3d();
+int sierpisky_triangles_3d();
 int color_cube();
 
 int main() {
     // initDisplay();
     // sierpisky_triangles_2d();
-    // sierpisky_triangles_3d();
-    color_cube();
+    //sierpisky_triangles_3d();
+    //color_cube();
+
+    mat4 projection = glm::frustum(-1, 1, -1, 1, 4, 7);
+    //projection[2][2] = -projection[2][2];
+
+    vec4 a{1, 1, -6,1.0};
+    vec4 b{1, 1, -5,1.0};
+    auto pa = projection * a;
+    auto pb = projection * b;
+
+    pa = pa/pa.w;
+    pb = pb/pb.w;
+
+    cout << pa.x << ", " << pa.y << ", " << pa.z << ", " << pa.w << endl;
+    cout << pb.x << ", " << pb.y << ", " << pb.z << ", " << pb.w << endl;
 }
 
 

@@ -7,5 +7,6 @@ uniform mat4 projection;
 
 void main() {
     gl_Position = projection * modelView * vPosition;
+    gl_Position /= gl_Position.w;
     fColor = vColor;
 }

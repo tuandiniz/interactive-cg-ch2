@@ -12,6 +12,7 @@
 #define GLFW_INCLUDE_GLCOREARB
 #define GL_GLEXT_PROTOTYPES
 #include <GLFW/glfw3.h>
+#include "utils.h"
 
 #define BUFFER_OFFSET(bytes) ((GLvoid*) (bytes))
 
@@ -23,6 +24,7 @@ typedef vec4 color4;
 
 int vertexCount = 0;
 int rotationAxisIndex = 0;
+bool isPerspective = false;
 
 void populateBuffers(vector<point4>& pointsArray, vector<color4>& colorArray) {
     GLuint abuffer;
@@ -53,8 +55,14 @@ void quad(const point4 vertexList[], const color4 colorList[],
     pointsArray.push_back(vertexList[c]);
     colorArray.push_back(colorList[c]);
 
+    pointsArray.push_back(vertexList[c]);
+    colorArray.push_back(colorList[c]);
+
     pointsArray.push_back(vertexList[d]);
     colorArray.push_back(colorList[d]);
+
+    pointsArray.push_back(vertexList[a]);
+    colorArray.push_back(colorList[a]);
 }
 
 void generateColorCube() {
@@ -76,17 +84,15 @@ void generateColorCube() {
     vector<point4> pointsArray;
     vector<color4> colorArray;
 
-    quad(vertexList, colorList, pointsArray, colorArray, 0, 1, 3, 2);
-    quad(vertexList, colorList, pointsArray, colorArray, 3, 2, 7, 6);
-    quad(vertexList, colorList, pointsArray, colorArray, 4, 7, 5, 6);
-    quad(vertexList, colorList, pointsArray, colorArray, 0, 1, 4, 5);
-    quad(vertexList, colorList, pointsArray, colorArray, 2, 1, 6, 5);
-    quad(vertexList, colorList, pointsArray, colorArray, 3, 0, 7, 4);
+    quad(vertexList, colorList, pointsArray, colorArray, 0, 3, 2, 1);
+    quad(vertexList, colorList, pointsArray, colorArray, 2, 3, 7, 6);
+    quad(vertexList, colorList, pointsArray, colorArray, 5, 6, 7, 4);
+    quad(vertexList, colorList, pointsArray, colorArray, 0, 1, 5, 4);
+    quad(vertexList, colorList, pointsArray, colorArray, 1, 2, 6, 5);
+    quad(vertexList, colorList, pointsArray, colorArray, 3, 0, 4, 7);
 
     populateBuffers(pointsArray, colorArray);
 }
-
-string readFile(const string& fileName);
 
 GLuint initShadersColorCube() {
     auto vShader = readFile("../color_and_cmt.vert");
@@ -151,7 +157,7 @@ GLuint initShadersColorCube() {
 
 void displayColorCube(GLFWwindow* window) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, vertexCount);
+    glDrawArrays(GL_TRIANGLES, 0, vertexCount);
 
     // Draw
     glfwSwapBuffers(window);
@@ -167,12 +173,16 @@ void idleFunc(GLFWwindow* window, double& delta, GLuint& modelViewLoc, mat4& tra
     rotationAxis[rotationAxisIndex] = 1.0;
 
     mat4 projection(1.0);
-    projection[2][2] = -1.0;
+    projection[2][2] = -0.1;
     projection[0][0] = 0.5;
+
+    if (isPerspective) {
+        projection = glm::frustum(-1.0, 1.0, -0.5, 0.5, 1.5, 10.0);
+    }
 
     transform = rotate(mat4(1.0), rotation, rotationAxis) * transform;
 
-    glUniformMatrix4fv(modelViewLoc, 1, GL_FALSE, value_ptr(transform));
+//    glUniformMatrix4fv(modelViewLoc, 1, GL_FALSE, value_ptr(transform));
     glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, value_ptr(projection));
     displayColorCube(window);
 }
@@ -187,6 +197,17 @@ void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
         } else if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
             rotationAxisIndex = 2;
         }
+    }
+}
+
+void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    if (key == GLFW_KEY_P && action == GLFW_PRESS) {
+        isPerspective = true;
+    }
+
+    if (key == GLFW_KEY_O && action == GLFW_PRESS)  {
+        isPerspective = false;
     }
 }
 
@@ -211,10 +232,13 @@ int initDisplayColorCube() {
 
     glfwSetWindowRefreshCallback(window, &displayColorCube);
     glfwSetMouseButtonCallback(window, mouseButtonCallback);
+    glfwSetKeyCallback(window, keyCallback);
 
     glClearColor(1.0, 1.0, 1.0, 1.0);
     glfwSwapInterval(1);
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
 
     auto previous = glfwGetTime();
 
@@ -232,6 +256,8 @@ int initDisplayColorCube() {
         if (delta > 0.00833) { // 120 FPS
             previous = now;
             idleFunc(window, delta, modelViewLoc, transform, projectionLoc);
+            auto translate = glm::translate(mat4(1.0), vec3(0.7, 0.0, -2.8));
+            glUniformMatrix4fv(modelViewLoc, 1, GL_FALSE, value_ptr(translate * transform));
         }
 
         /* Poll for and process events */
@@ -244,4 +270,8 @@ int initDisplayColorCube() {
 
 int color_cube() {
     return initDisplayColorCube();
+}
+
+int main() {
+    return color_cube();
 }
