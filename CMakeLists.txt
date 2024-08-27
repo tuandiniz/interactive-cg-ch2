@@ -19,3 +19,7 @@ add_executable(interactive_cg_ch2 main.cpp
 add_executable(color_cube color_cube.cpp
         utils.h
         utils.cpp)
+
+add_executable(recursive_sphere recursive_sphere.cpp
+        utils.h
+        utils.cpp)

@@ -146,22 +146,8 @@ int color_cube();
 int main() {
     // initDisplay();
     // sierpisky_triangles_2d();
-    //sierpisky_triangles_3d();
+    sierpisky_triangles_3d();
     //color_cube();
-
-    mat4 projection = glm::frustum(-1, 1, -1, 1, 4, 7);
-    //projection[2][2] = -projection[2][2];
-
-    vec4 a{1, 1, -6,1.0};
-    vec4 b{1, 1, -5,1.0};
-    auto pa = projection * a;
-    auto pb = projection * b;
-
-    pa = pa/pa.w;
-    pb = pb/pb.w;
-
-    cout << pa.x << ", " << pa.y << ", " << pa.z << ", " << pa.w << endl;
-    cout << pb.x << ", " << pb.y << ", " << pb.z << ", " << pb.w << endl;
 }
 
 
