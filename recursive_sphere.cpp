@@ -29,16 +29,16 @@ void subdivideTriangle(const point3 v1, const point3 v2, const point3 v3, const 
         colors.push_back(colorPallete[colorIndex]);
         colors.push_back(colorPallete[colorIndex]);
         colors.push_back(colorPallete[colorIndex]);
-        points.push_back(normalize(v1));
-        points.push_back(normalize(v2));
-        points.push_back(normalize(v3));
+        points.push_back(v1);
+        points.push_back(v2);
+        points.push_back(v3);
 
         return;
     }
 
-    const point3 midVertex1 = (v1 + v2) / 2.0f;
-    const point3 midVertex2 = (v2 + v3) / 2.0f;
-    const point3 midVertex3 = (v3 + v1) / 2.0f;
+    const point3 midVertex1 = normalize((v1 + v2) / 2.0f);
+    const point3 midVertex2 = normalize((v2 + v3) / 2.0f);
+    const point3 midVertex3 = normalize((v3 + v1) / 2.0f);
 
 
     point3 triangle1[4] = {v1, midVertex1, midVertex3};
@@ -55,8 +55,8 @@ void subdivideTriangle(const point3 v1, const point3 v2, const point3 v3, const 
 void computeTriangles(vector<point3>& points, vector<point3>& colors, const int& depth) {
 
     // A tetrahedron the center of the unit cube
-    point3 vertices[4] = { point3(-1.0, -1.0, -1.0), point3(0.0, 1.0, -1.0),
-                           point3(1.0, -1.0, -1.0), point3(0.0, -0.25, 1.0)};
+    point3 vertices[4] = { normalize(point3(-1.0, -1.0, -1.0)), normalize(point3(0.0, 1.0, -1.0)),
+                           normalize(point3(1.0, -1.0, -1.0)), normalize(point3(0.0, -0.25, 1.0))};
 
     subdivideTriangle(vertices[0], vertices[1], vertices[2], 0, points, colors, depth);
     subdivideTriangle(vertices[3], vertices[1], vertices[0], 0, points, colors, depth);
