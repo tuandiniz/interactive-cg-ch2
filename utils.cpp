@@ -44,6 +44,6 @@ CImg<unsigned char> readImage(const std::string& fileName) {
     img.load_jpeg_buffer(buffer_input, buf_size);
     delete[] buffer_input;
 
-    img.permute_axes("cxyz");
+    img.resize(512, 512, 1);
     return img;
 }

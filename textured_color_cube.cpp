@@ -1,8 +1,5 @@
-//
-// Created by tuan on 30/05/24.
-//
+
 #include <iostream>
-#include <fstream>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -107,12 +104,31 @@ void generateColorCube() {
     populateBuffers(pointsArray, colorArray, textArray);
 }
 
-void initTexture(const string& fileName) {
+void initTexture(GLuint program, const string& fileName) {
     cimg_library::CImg<unsigned char> img = readImage(fileName);
+
+    GLubyte img_arr[img.width()][img.height()][img.spectrum()];
+    for (int i = 0; i < img.width(); i++) {
+        for(int j = 0; j < img.height(); j++) {
+            for(int k = 0; k < img.spectrum(); k++) {
+                img_arr[i][j][k] = img(i, j, 0, k);
+            }
+        }
+    }
 
     GLuint textures[1];
     glGenTextures(1, textures);
     glBindTexture(GL_TEXTURE_2D, textures[0]);
+
+    glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img.width(), img.height(), 0,
+                 GL_RGB, GL_UNSIGNED_BYTE, img_arr);
+
+    GLuint textLoc;
+    textLoc = glGetUniformLocation(program, "textMap");
+
+    glUniform1i(textLoc, 0);
 }
 
 GLuint initShadersColorCube() {
@@ -256,7 +272,7 @@ int initDisplayColorCube() {
     glfwMakeContextCurrent(window);
     generateColorCube();
     auto programId = initShadersColorCube();
-    initTexture("../Checkers.jpeg");
+    initTexture(programId, "../Checkers.jpeg");
 
     glfwSetWindowRefreshCallback(window, &displayColorCube);
     glfwSetMouseButtonCallback(window, mouseButtonCallback);
@@ -264,6 +280,7 @@ int initDisplayColorCube() {
 
     glClearColor(1.0, 1.0, 1.0, 1.0);
     glfwSwapInterval(1);
+
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
