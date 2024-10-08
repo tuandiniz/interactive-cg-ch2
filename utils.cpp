@@ -45,6 +45,6 @@ CImg<unsigned char> readImage(const std::string& fileName) {
     delete[] buffer_input;
 
     img.resize(512, 512, 1);
-    img.rotate(90);
+    img.rotate(-90);
     return img;
 }

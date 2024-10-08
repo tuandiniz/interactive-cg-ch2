@@ -140,13 +140,13 @@ void initCubeTextures(GLuint program, const string& frontFile,
     glTexParameteri (GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
     glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGB, 512, 512, 0,
-                 GL_RGB, GL_UNSIGNED_BYTE, right);
-    glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGB, 512, 512, 0,
                  GL_RGB, GL_UNSIGNED_BYTE, left);
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGB, 512, 512, 0,
+                 GL_RGB, GL_UNSIGNED_BYTE, right);
     glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_RGB, 512, 512, 0,
-                 GL_RGB, GL_UNSIGNED_BYTE, bottom);
-    glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGB, 512, 512, 0,
                  GL_RGB, GL_UNSIGNED_BYTE, top);
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGB, 512, 512, 0,
+                 GL_RGB, GL_UNSIGNED_BYTE, bottom);
     glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_RGB, 512, 512, 0,
                  GL_RGB, GL_UNSIGNED_BYTE, front);
     glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGB, 512, 512, 0,
@@ -236,14 +236,13 @@ void displayColorCube(GLFWwindow* window) {
 void idleFunc(GLFWwindow* window, double& delta, GLuint& modelViewLoc, mat4& transform, GLuint& projectionLoc) {
 
     // Speed in rads/s
-    float angularVelocity = radians(10.0f);
+    float angularVelocity = radians(50.0f);
     float rotation = angularVelocity * delta;
 
     vec3 rotationAxis = vec3();
     rotationAxis[rotationAxisIndex] = 1.0;
 
     mat4 projection(1.0);
-    projection[2][2] = -0.1;
     projection[0][0] = 1.0;
 
     if (isPerspective) {

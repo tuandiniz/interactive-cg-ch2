@@ -7,5 +7,5 @@ out vec4 fragColor;
 uniform samplerCube textMap;
 
 void main() {
-    fragColor = textureCube(textMap, reflection);
+    fragColor = texture(textMap, reflection);
 }

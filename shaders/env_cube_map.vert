@@ -10,7 +10,7 @@ uniform mat4 projection;
 
 void main() {
     gl_Position = projection * modelView * vPosition;
-    vec3 eyePos = normalize(modelView * vPosition).xyz;
-    vec3 N = normalize((modelView * vNormal).xyz);
-    reflection = reflect(eyePos, N);
+    vec3 eyePos = normalize((modelView * vPosition).xyz);
+    vec3 N = normalize(normalize(modelView * vNormal).xyz);
+    reflection = eyePos;
 }
