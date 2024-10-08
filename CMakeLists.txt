@@ -30,3 +30,7 @@ add_executable(recursive_sphere recursive_sphere.cpp
 add_executable(textured_color_cube textured_color_cube.cpp
         utils.h
         utils.cpp)
+
+add_executable(environment_mapped_cube environment_mapped_cube.cpp
+        utils.h
+        utils.cpp)

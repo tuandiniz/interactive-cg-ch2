@@ -36,7 +36,7 @@ CImg<unsigned char> readImage(const std::string& fileName) {
     std::FILE *file_input = std::fopen(filename_input,"rb");
     if (!file_input) { std::fprintf(stderr,"Input JPEG file not found !"); std::exit(0); }
 
-    unsigned buf_size = 500000; // Put the file size here !
+    unsigned buf_size = 5000000; // Put the file size here !
     JOCTET *buffer_input = new JOCTET[buf_size];
     if (std::fread(buffer_input,sizeof(JOCTET),buf_size,file_input)) std::fclose(file_input);
 
@@ -45,5 +45,6 @@ CImg<unsigned char> readImage(const std::string& fileName) {
     delete[] buffer_input;
 
     img.resize(512, 512, 1);
+    img.rotate(90);
     return img;
 }

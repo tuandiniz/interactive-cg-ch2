@@ -1,5 +1,6 @@
-
 #include <iostream>
+
+#define GLM_SWIZZLE
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -15,6 +16,7 @@
 
 using namespace glm;
 using namespace std;
+using namespace cimg_library;
 
 typedef vec4 point4;
 typedef vec4 color4;
@@ -23,7 +25,7 @@ int vertexCount = 0;
 int rotationAxisIndex = 0;
 bool isPerspective = false;
 
-void populateBuffers(vector<point4>& pointsArray, vector<color4>& colorArray, vector<vec2>& textArray) {
+void populateBuffers(vector<point4>& pointsArray, vector<vec3>& normalArray, vector<vec2>& textArray) {
     GLuint abuffer;
     glGenVertexArrays(1, &abuffer);
     glBindVertexArray(abuffer);
@@ -39,38 +41,42 @@ void populateBuffers(vector<point4>& pointsArray, vector<color4>& colorArray, ve
     int offset = 0;
     glBufferSubData(GL_ARRAY_BUFFER, offset, vertexCount * sizeof(point4), pointsArray.data());
     offset += vertexCount * sizeof(point4);
-    glBufferSubData(GL_ARRAY_BUFFER, offset, vertexCount * sizeof(color4), colorArray.data());
-    offset += vertexCount * sizeof(color4);
+    glBufferSubData(GL_ARRAY_BUFFER, offset, vertexCount * sizeof(vec3), normalArray.data());
+    offset += vertexCount * sizeof(vec3);
     glBufferSubData(GL_ARRAY_BUFFER, offset, vertexCount * sizeof(vec2), textArray.data());
 }
 
-void quad(const point4 vertexList[], const color4 colorList[],
-          vector<point4>& pointsArray, vector<color4>& colorArray, vector<vec2>& textArray,
-          const int a, const int b, const int c, const int d) {
+void quad(const point4 vertexList[], vector<point4>& pointsArray,
+                vector<vec3>& normalArray, vector<vec2>& textArray,
+                const int a, const int b, const int c, const int d) {
+
+    vec3 normal = cross(vec3(vertexList[b].xyz() - vertexList[a].xyz()),
+        vec3(vertexList[c].xyz() - vertexList[b].xyz()));
+    normal = normalize(normal);
 
     // Triangle strip
     pointsArray.push_back(vertexList[a]);
-    colorArray.push_back(colorList[a]);
+    normalArray.push_back(normal);
     textArray.emplace_back(0.0, 0.0);
 
     pointsArray.push_back(vertexList[b]);
-    colorArray.push_back(colorList[b]);
+    normalArray.push_back(normal);
     textArray.emplace_back(1.0, 0.0);
 
     pointsArray.push_back(vertexList[c]);
-    colorArray.push_back(colorList[c]);
+    normalArray.push_back(normal);
     textArray.emplace_back(1.0, 1.0);
 
     pointsArray.push_back(vertexList[c]);
-    colorArray.push_back(colorList[c]);
+    normalArray.push_back(normal);
     textArray.emplace_back(1.0, 1.0);
 
     pointsArray.push_back(vertexList[d]);
-    colorArray.push_back(colorList[d]);
+    normalArray.push_back(normal);
     textArray.emplace_back(0.0, 1.0);
 
     pointsArray.push_back(vertexList[a]);
-    colorArray.push_back(colorList[a]);
+    normalArray.push_back(normal);
     textArray.emplace_back(0.0, 0.0);
 }
 
@@ -83,31 +89,21 @@ void generateColorCube() {
         point4(1.0, 1.0, -1.0, 1.0),point4(1.0, 1.0, 1.0, 1.0)
     };
 
-    const color4 colorList[8] = {
-        color4(0.0, 0.0, 0.0, 1.0), color4(1.0, 0.0, 0.0, 1.0),
-        color4(1.0, 0.0, 1.0, 1.0), color4(0.0, 0.0, 1.0, 1.0),
-        color4(0.0, 1.0, 0.0, 1.0), color4(1.0, 1.0, 0.0, 1.0),
-        color4(1.0, 1.0, 1.0, 1.0), color4(0.0, 1.0, 1.0, 1.0),
-    };
-
     vector<point4> pointsArray;
-    vector<color4> colorArray;
+    vector<vec3> normalArray;
     vector<vec2> textArray;
 
-    quad(vertexList, colorList, pointsArray, colorArray, textArray, 0, 3, 2, 1);
-    quad(vertexList, colorList, pointsArray, colorArray, textArray, 2, 3, 7, 6);
-    quad(vertexList, colorList, pointsArray, colorArray, textArray, 5, 6, 7, 4);
-    quad(vertexList, colorList, pointsArray, colorArray, textArray, 0, 1, 5, 4);
-    quad(vertexList, colorList, pointsArray, colorArray, textArray, 1, 2, 6, 5);
-    quad(vertexList, colorList, pointsArray, colorArray, textArray, 3, 0, 4, 7);
+    quad(vertexList, pointsArray, normalArray, textArray, 0, 3, 2, 1);
+    quad(vertexList, pointsArray, normalArray, textArray, 2, 3, 7, 6);
+    quad(vertexList, pointsArray, normalArray, textArray, 5, 6, 7, 4);
+    quad(vertexList, pointsArray, normalArray, textArray, 0, 1, 5, 4);
+    quad(vertexList, pointsArray, normalArray, textArray, 1, 2, 6, 5);
+    quad(vertexList, pointsArray, normalArray, textArray, 3, 0, 4, 7);
 
-    populateBuffers(pointsArray, colorArray, textArray);
+    populateBuffers(pointsArray, normalArray, textArray);
 }
 
-void initTexture(GLuint program, const string& fileName) {
-    cimg_library::CImg<unsigned char> img = readImage(fileName);
-
-    GLubyte img_arr[img.width()][img.height()][img.spectrum()];
+void imgToArray(CImg<unsigned char> img, GLubyte(* img_arr)[512][3]) {
     for (int i = 0; i < img.width(); i++) {
         for(int j = 0; j < img.height(); j++) {
             for(int k = 0; k < img.spectrum(); k++) {
@@ -115,15 +111,46 @@ void initTexture(GLuint program, const string& fileName) {
             }
         }
     }
+}
+
+void initCubeTextures(GLuint program, const string& frontFile,
+                      const string& backFile,
+                      const string& leftFile,
+                      const string& rightFile,
+                      const string& topFile,
+                      const string& bottomFile) {
+
+    GLubyte front[512][512][3],
+            back[512][512][3],
+            top[512][512][3],
+            bottom[512][512][3],
+            left[512][512][3],
+            right[512][512][3];
+    imgToArray(readImage(frontFile), front);
+    imgToArray(readImage(backFile), back);
+    imgToArray(readImage(leftFile), left);
+    imgToArray(readImage(rightFile), right);
+    imgToArray(readImage(topFile), top);
+    imgToArray(readImage(bottomFile), bottom);
 
     GLuint textures[1];
     glGenTextures(1, textures);
-    glBindTexture(GL_TEXTURE_2D, textures[0]);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, textures[0]);
 
-    glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri (GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img.width(), img.height(), 0,
-                 GL_RGB, GL_UNSIGNED_BYTE, img_arr);
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGB, 512, 512, 0,
+                 GL_RGB, GL_UNSIGNED_BYTE, right);
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGB, 512, 512, 0,
+                 GL_RGB, GL_UNSIGNED_BYTE, left);
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_RGB, 512, 512, 0,
+                 GL_RGB, GL_UNSIGNED_BYTE, bottom);
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGB, 512, 512, 0,
+                 GL_RGB, GL_UNSIGNED_BYTE, top);
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_RGB, 512, 512, 0,
+                 GL_RGB, GL_UNSIGNED_BYTE, front);
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGB, 512, 512, 0,
+                 GL_RGB, GL_UNSIGNED_BYTE, back);
 
     GLuint textLoc;
     textLoc = glGetUniformLocation(program, "textMap");
@@ -132,8 +159,8 @@ void initTexture(GLuint program, const string& fileName) {
 }
 
 GLuint initShadersColorCube() {
-    auto vShader = readFile("../shaders/color_cmt_and_textures.vert");
-    auto fShader = readFile("../shaders/flat_color_text.frag");
+    auto vShader = readFile("../shaders/env_cube_map.vert");
+    auto fShader = readFile("../shaders/env_cube_map.frag");
 
     struct Shader {
         string src;
@@ -186,11 +213,11 @@ GLuint initShadersColorCube() {
     glVertexAttribPointer(loc, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(offset));
 
     offset += vertexCount * sizeof(point4);
-    const GLuint locColors = glGetAttribLocation(program, "vColor");
-    glEnableVertexAttribArray(locColors);
-    glVertexAttribPointer(locColors, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(offset));
+    const GLuint locNormals = glGetAttribLocation(program, "vNormal");
+    glEnableVertexAttribArray(locNormals);
+    glVertexAttribPointer(locNormals, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(offset));
 
-    offset += vertexCount * sizeof(color4);
+    offset += vertexCount * sizeof(vec3);
     const GLuint locTextures = glGetAttribLocation(program, "vTextCoord");
     glEnableVertexAttribArray(locTextures);
     glVertexAttribPointer(locTextures, 2, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(offset));
@@ -209,7 +236,7 @@ void displayColorCube(GLFWwindow* window) {
 void idleFunc(GLFWwindow* window, double& delta, GLuint& modelViewLoc, mat4& transform, GLuint& projectionLoc) {
 
     // Speed in rads/s
-    float angularVelocity = radians(120.0f);
+    float angularVelocity = radians(10.0f);
     float rotation = angularVelocity * delta;
 
     vec3 rotationAxis = vec3();
@@ -217,7 +244,7 @@ void idleFunc(GLFWwindow* window, double& delta, GLuint& modelViewLoc, mat4& tra
 
     mat4 projection(1.0);
     projection[2][2] = -0.1;
-    projection[0][0] = 0.5;
+    projection[0][0] = 1.0;
 
     if (isPerspective) {
         projection = glm::frustum(-1.0, 1.0, -0.5, 0.5, 1.5, 10.0);
@@ -261,7 +288,7 @@ int initDisplayColorCube() {
         return -1;
 
     /* Create a windowed mode window and its OpenGL context */
-    GLFWwindow* window = glfwCreateWindow(1200, 600, "Hello World", nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(1200, 1200, "Hello World", nullptr, nullptr);
     if (!window)
     {
         glfwTerminate();
@@ -272,7 +299,12 @@ int initDisplayColorCube() {
     glfwMakeContextCurrent(window);
     generateColorCube();
     auto programId = initShadersColorCube();
-    initTexture(programId, "../Checkers.jpeg");
+    initCubeTextures(programId, "../textures/front.jpg",
+        "../textures/back.jpg",
+        "../textures/left.jpg",
+        "../textures/right.jpg",
+        "../textures/top.jpg",
+        "../textures/bottom.jpg");
 
     glfwSetWindowRefreshCallback(window, &displayColorCube);
     glfwSetMouseButtonCallback(window, mouseButtonCallback);
@@ -301,8 +333,8 @@ int initDisplayColorCube() {
         if (delta > 0.00833) { // 120 FPS
             previous = now;
             idleFunc(window, delta, modelViewLoc, transform, projectionLoc);
-            auto translate = glm::translate(mat4(1.0), vec3(0.0, 0.0, -2.8));
-            glUniformMatrix4fv(modelViewLoc, 1, GL_FALSE, value_ptr(translate * transform));
+            //auto translate = glm::translate(mat4(1.0), vec3(0.0, 0.0, -2.8));
+            glUniformMatrix4fv(modelViewLoc, 1, GL_FALSE, value_ptr(transform));
         }
 
         /* Poll for and process events */
