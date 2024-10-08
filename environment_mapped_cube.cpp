@@ -138,6 +138,7 @@ void initCubeTextures(GLuint program, const string& frontFile,
     glBindTexture(GL_TEXTURE_CUBE_MAP, textures[0]);
 
     glTexParameteri (GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri (GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGB, 512, 512, 0,
                  GL_RGB, GL_UNSIGNED_BYTE, left);
@@ -312,6 +313,7 @@ int initDisplayColorCube() {
     glClearColor(1.0, 1.0, 1.0, 1.0);
     glfwSwapInterval(1);
 
+    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);

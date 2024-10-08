@@ -272,7 +272,7 @@ int initDisplayColorCube() {
     glfwMakeContextCurrent(window);
     generateColorCube();
     auto programId = initShadersColorCube();
-    initTexture(programId, "../Checkers.jpeg");
+    initTexture(programId, "../textures/Checkers.jpeg");
 
     glfwSetWindowRefreshCallback(window, &displayColorCube);
     glfwSetMouseButtonCallback(window, mouseButtonCallback);
