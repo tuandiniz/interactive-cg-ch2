@@ -74,8 +74,8 @@ void computeTriangles(vector<point3>& points, vector<point3>& normals, const int
 string readFile(const string& fileName);
 
 GLuint initShaders3D() {
-    auto vShader = readFile("../color_and_lightning.vert");
-    auto fShader = readFile("../color_and_lightning.frag");
+    auto vShader = readFile("../shaders/color_and_lightning.vert");
+    auto fShader = readFile("../shaders/color_and_lightning.frag");
 
     struct Shader {
         string src;
