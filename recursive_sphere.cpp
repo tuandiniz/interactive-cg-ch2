@@ -18,8 +18,9 @@ using namespace std;
 
 typedef vec3 point3;
 
-const int recursionDepth = 6;
+const int recursionDepth = 11;
 int tetraPointCount;
+int rotationAxisIndex = 0;
 
 void subdivideTriangle(const point3 v1, const point3 v2, const point3 v3, vector<point3>& points, vector<point3>& normals, const int currentIteration) {
 
@@ -157,6 +158,38 @@ void displayTriangles3D(GLFWwindow* window) {
     glfwSwapBuffers(window);
 }
 
+void idleFunc(GLFWwindow* window, double delta, mat4& lightRotation,
+        vec4& lightPosition, GLint& lightPositionLocation) {
+
+    // Speed in rads/s
+    float angularVelocity = radians(240.0f);
+    float rotation = angularVelocity * delta;
+
+    vec3 rotationAxis = vec3();
+    rotationAxis[rotationAxisIndex] = 1.0;
+
+    mat4 projection(1.0);
+    projection[0][0] = 1.0;
+
+    lightRotation = rotate(mat4(1.0), rotation, rotationAxis) * lightRotation;
+    glUniform4fv(lightPositionLocation, 1, value_ptr(lightRotation * lightPosition));
+
+    displayTriangles3D(window);
+}
+
+void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
+{
+    if (action == GLFW_PRESS) {
+        if (button == GLFW_MOUSE_BUTTON_RIGHT) {
+            rotationAxisIndex = 0;
+        } else if (button == GLFW_MOUSE_BUTTON_LEFT) {
+            rotationAxisIndex = 1;
+        } else if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
+            rotationAxisIndex = 2;
+        }
+    }
+}
+
 int initDisplayTriangles3D() {
 
     /* Initialize the library */
@@ -177,6 +210,7 @@ int initDisplayTriangles3D() {
     GLuint programId = initShaders3D();
 
     glfwSetWindowRefreshCallback(window, &displayTriangles3D);
+    glfwSetMouseButtonCallback(window, mouseButtonCallback);
     glClearColor(1.0, 1.0, 1.0, 1.0);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
@@ -186,7 +220,7 @@ int initDisplayTriangles3D() {
     GLint ambientProductLocation = glGetUniformLocation(programId, "ambientProduct");
     GLint diffuseProductLocation = glGetUniformLocation(programId, "diffuseProduct");
     GLint specularProductLocation = glGetUniformLocation(programId, "specularProduct");
-    GLint lightPosition = glGetUniformLocation(programId, "lightPosition");
+    GLint lightPositionLocation = glGetUniformLocation(programId, "lightPosition");
     GLint shininess = glGetUniformLocation(programId, "shininess");
 
     vec4 ambientLightColor = vec4(0.3, 0.3, 0.3, 1.0);
@@ -201,15 +235,28 @@ int initDisplayTriangles3D() {
     vec4 specularMaterialColor = vec4(0.7, 0.7, 0.7, 1.0);
     vec4 specularProduct = specularLightColor * specularMaterialColor;
 
-    glUniform4fv(lightPosition, 1, value_ptr(vec4(3.0, 3.0, 4.0, 1.0)));
+    mat4 lightRotation(1.0);
+    vec4 lightPosition = vec4(5.0, 5.0, 5.0, 1.0);
+
+    glUniform4fv(lightPositionLocation, 1, value_ptr(lightPosition));
     glUniform1f(shininess, 85.0);
     glUniform4fv(ambientProductLocation, 1, value_ptr(ambientProduct));
     glUniform4fv(diffuseProductLocation, 1, value_ptr(diffuseProduct));
     glUniform4fv(specularProductLocation, 1, value_ptr(specularProduct));
 
+    auto previous = glfwGetTime();
+
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
+        auto now = glfwGetTime();
+        auto delta = now - previous;
+
+        if (delta > 0.00833) { // 120 FPS
+            previous = now;
+            idleFunc(window, delta, lightRotation, lightPosition, lightPositionLocation);
+        }
+
         /* Poll for and process events */
         glfwPollEvents();
     }
