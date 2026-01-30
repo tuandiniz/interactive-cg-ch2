@@ -95,8 +95,8 @@ void generateColorCube() {
 }
 
 GLuint initShadersColorCube() {
-    auto vShader = readFile("../color_and_cmt.vert");
-    auto fShader = readFile("../flat_color.frag");
+    auto vShader = readFile("../shaders/color_and_cmt.vert");
+    auto fShader = readFile("../shaders/flat_color.frag");
 
     struct Shader {
         string src;

@@ -3,10 +3,14 @@ project(interactive_cg_ch2)
 
 set(CMAKE_CXX_STANDARD 17)
 
+find_package(OpenGL REQUIRED)
+find_package(glfw3 REQUIRED)
+
 link_libraries(glfw)
 link_libraries(X11)
 link_libraries(GL)
 link_libraries(libjpeg.a)
+link_libraries(pthread)
 
 
 add_executable(interactive_cg_ch2 main.cpp
